@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>JEV — Database workspace</title>
+    <link rel="stylesheet" href="/ask-assets/explore.css" />
+    <script src="/ask-assets/locales.js" defer></script>
+    <script src="/ask-assets/explore.js" defer></script>
+    <script src="/ask-assets/features.js" defer></script>
+    <script src="/ask-assets/hybrid-view.js" defer></script>
+    <script src="/ask-assets/planning.js" defer></script>
+    <script src="/ask-assets/history.js" defer></script>
+    <script src="/ask-assets/text-import.js" defer></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <a id="brand-home" class="brand" href="/ask" aria-label="JEV">
+        <span class="mark" aria-hidden="true"
+          ><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i
+        ></span>
+        <span class="brand-name">JEV</span
+        ><span class="brand-label" data-i18n="brand">DATABASE</span>
+      </a>
+      <nav class="topnav" data-i18n-aria-label="workspace">
+        <span class="current" data-i18n="workspace">Workspace</span>
+        <a href="#workspace-guide" data-i18n="workspaceGuide">Guide</a>
+        <a href="/docs"
+          ><span data-i18n="api">API reference</span> <span aria-hidden="true">↗</span></a
+        >
+      </nav>
+      <nav class="language-switch" data-i18n-aria-label="language">
+        <a href="/ask/en" data-language="en" data-i18n="english">English</a>
+        <a href="/ask/zh" data-language="zh" data-i18n="chinese">Chinese</a>
+      </nav>
+    </header>
+    <div class="app-layout">
+      <aside class="sidebar" data-i18n-aria-label="catalog">
+        <h2 class="section-label">
+          <span class="index">01</span><span data-i18n="catalog">Data catalog</span>
+        </h2>
+        <p data-i18n="catalogHint">Select the data your query can use.</p>
+        <details class="connection-block" id="connection-panel" open>
+          <summary>
+            <span data-i18n="connectionSettings">Connection</span
+            ><span class="connection-badge" id="connection-badge"
+              ><span id="connection" role="status" data-i18n="disconnected">Offline</span></span
+            >
+          </summary>
+          <label for="token" data-i18n="token">Access token</label>
+          <input
+            id="token"
+            type="password"
+            autocomplete="off"
+            data-i18n-placeholder="tokenPlaceholder"
+          />
+          <button id="connect" data-i18n="connect">Connect</button>
+          <p id="connection-error" class="connection-error" role="alert" hidden></p>
+        </details>
+        <div class="sidebar-heading">
+          <label for="datasets" data-i18n="datasets">Datasets</label
+          ><button id="all-datasets" class="text-button" data-i18n="allDatasets">Use all</button>
+        </div>
+        <select id="datasets" multiple size="7" data-i18n-aria-label="datasets"></select>
+        <div class="catalog-meta">
+          <span id="catalog-count">0</span><span id="scope" data-i18n="scopeAll">All datasets</span>
+        </div>
+        <p class="hint" data-i18n="datasetHint">Select multiple with Ctrl or Command.</p>
+        <details class="schema-disclosure">
+          <summary data-i18n="columns">Columns & relationships</summary>
+          <pre id="schema" data-i18n="catalogDisconnected">Connect to load your datasets.</pre>
+        </details>
+        <section class="history-panel" aria-labelledby="history-heading">
+          <div class="sidebar-heading">
+            <h2 id="history-heading" class="section-label" data-i18n="historyTitle">
+              Recent queries
+            </h2>
+            <button id="refresh-history" class="text-button" data-i18n="historyRefresh">
+              Refresh
+            </button>
+          </div>
+          <p class="hint" data-i18n="historyHint">
+            Open a query to edit it or review its decisions.
+          </p>
+          <p id="history-status" class="hint" role="status" data-i18n="historyConnect">
+            Connect to load your history.
+          </p>
+          <ol id="history-list" class="history-list"></ol>
+          <button id="history-more" class="text-button" data-i18n="historyMore" hidden>
+            Load older queries
+          </button>
+        </section>
+        <div class="sidebar-bottom">
+          <span class="cross" aria-hidden="true"></span
+          ><span data-i18n="localWorkspace">LOCAL WORKSPACE</span>
+        </div>
+      </aside>
+      <main class="workspace">
+        <div class="workspace-heading">
+          <div>
+            <h1 data-i18n="heading">Query workspace</h1>
+            <p data-i18n="subtitle">Ask a question. Inspect the result.</p>
+          </div>
+          <div class="system-glyph" aria-hidden="true">
+            <span></span><span></span><span></span><span></span>
+          </div>
+        </div>
+        <section id="history-context" class="history-context" hidden>
+          <div>
+            <strong data-i18n="historyEditing">Editing a saved query</strong>
+            <p id="history-original"></p>
+            <p class="hint" data-i18n="historyPreserved">
+              Your next run creates a new entry. The original query is kept.
+            </p>
+          </div>
+          <div class="button-group">
+            <button
+              id="history-edit-question"
+              type="button"
+              class="secondary"
+              data-i18n="historyEditQuestion"
+            >
+              Edit question
+            </button>
+            <button
+              id="history-edit-sql"
+              type="button"
+              class="secondary"
+              data-i18n="historyEditSql"
+            >
+              Edit SQL
+            </button>
+            <button id="history-review" type="button" class="secondary" data-i18n="historyReview">
+              Review saved decisions
+            </button>
+            <button id="history-new" type="button" class="text-button" data-i18n="historyNew">
+              New query
+            </button>
+          </div>
+          <p id="history-warning" class="hint" role="status" hidden></p>
+        </section>
+        <details id="workspace-guide" class="workspace-guide">
+          <summary data-i18n="workspaceGuideTitle">Using the workspace</summary>
+          <div class="guide-grid">
+            <article>
+              <h3 data-i18n="guideQueryTitle">Ask and preview</h3>
+              <p data-i18n="guideQueryBody"></p>
+            </article>
+            <article>
+              <h3 data-i18n="guideReviewTitle">Review an interpretation</h3>
+              <p data-i18n="guideReviewBody"></p>
+            </article>
+            <article>
+              <h3 data-i18n="guideHistoryTitle">Revise a saved query</h3>
+              <p data-i18n="guideHistoryBody"></p>
+            </article>
+            <article>
+              <h3 data-i18n="guideExtractTitle">Turn text into records</h3>
+              <p data-i18n="guideExtractBody"></p>
+            </article>
+          </div>
+          <p class="hint" data-i18n="guideStatesBody"></p>
+        </details>
+        <form id="query-form" class="query-panel">
+          <div class="query-toolbar">
+            <h2 class="section-label">
+              <span class="index">02</span><span data-i18n="query">Query</span>
+            </h2>
+            <div class="query-controls">
+              <label
+                ><span class="sr-only" data-i18n="input">Input mode</span
+                ><select id="mode">
+                  <option value="natural" data-i18n="natural">Natural language</option>
+                  <option value="sql">SQL</option>
+                </select></label
+              >
+              <label><span class="sr-only" data-i18n="plannerMode">Planner</span>
+                <select id="planner-mode" aria-label="Planner" data-i18n-aria-label="plannerMode">
+                  <option value="jev" data-i18n="jevMode">JEV</option>
+                  <option value="hybrid" data-i18n="hybridMode">Hybrid · LLM + JEV</option>
+                </select></label>
+              <label for="budget" data-i18n-title="budgetHint"
+                ><span data-i18n="budget">Evaluation limit</span
+                ><input id="budget" type="number" min="0" max="1000" value="100"
+              /></label>
+            </div>
+          </div>
+          <p id="planner-help" class="planner-help" aria-live="polite"></p>
+          <div class="editor">
+            <label class="sr-only" for="question" data-i18n="question">Your query</label>
+            <textarea
+              id="question"
+              rows="3"
+              maxlength="30000"
+              spellcheck="false"
+              data-i18n-placeholder="questionPlaceholder"
+              required
+            ></textarea>
+          </div>
+          <div class="query-actions">
+            <span class="shortcut"
+              ><kbd>Ctrl ↵</kbd><span data-i18n="runShortcut">run</span
+              ><span class="divider">/</span><kbd>Alt ↵</kbd
+              ><span data-i18n="planShortcut">plan</span></span
+            >
+            <div class="button-group">
+              <button type="button" id="preview" class="secondary" data-i18n="plan">
+                Preview plan</button
+              ><button type="submit" id="run">
+                <span data-i18n="run">Run query</span><span aria-hidden="true">↗</span>
+              </button>
+            </div>
+          </div>
+        </form>
+        <div class="examples" id="examples"><span data-i18n="examples">QUICK START</span></div>
+        <section id="output" class="output" aria-live="polite">
+          <div class="output-heading">
+            <h2 class="section-label">
+              <span class="index">03</span><span data-i18n="results">Results</span>
+            </h2>
+            <span id="status" role="status" data-i18n="ready">Ready</span>
+          </div>
+          <section id="planning-review" class="planning-review" hidden>
+            <h3 data-i18n="reviewTitle">Review the interpretation</h3>
+            <p id="review-request" class="review-request"></p>
+            <p id="review-reason"></p>
+            <p class="hint" data-i18n="reviewHint">
+              Change a decision, then rebuild the plan. No query runs during correction.
+            </p>
+            <div class="review-proposal">
+              <h4 id="review-proposal-title"></h4>
+              <p id="review-proposal-note" class="hint"></p>
+              <pre id="review-proposal-sql"></pre>
+              <button
+                id="edit-proposal-sql"
+                type="button"
+                class="secondary"
+                data-i18n="reviewSql"
+                hidden
+              >
+                Edit proposed SQL
+              </button>
+            </div>
+            <div id="review-unresolved" class="review-unresolved" hidden>
+              <h4 data-i18n="reviewUnresolvedTitle">Unresolved parts</h4>
+              <ul id="review-unresolved-list"></ul>
+            </div>
+            <div id="review-decisions"></div>
+            <details id="review-more">
+              <summary data-i18n="reviewAll">All planning decisions</summary>
+              <div id="review-other-decisions"></div>
+            </details>
+            <p class="hint" data-i18n="reviewScoreHint">
+              Model scores express uncertainty; they are not measured accuracy.
+            </p>
+            <div class="actions">
+              <button id="rebuild-plan" class="secondary" data-i18n="reviewRebuild">
+                Rebuild plan
+              </button>
+              <button id="confirm-plan" data-i18n="reviewConfirm">Confirm and run query</button>
+            </div>
+          </section>
+          <div class="result-tabs" role="tablist" data-i18n-aria-label="results">
+            <button
+              id="tab-table"
+              role="tab"
+              aria-selected="true"
+              aria-controls="panel-table"
+              data-i18n="tableTab"
+            >
+              Table
+            </button>
+            <button
+              id="tab-sql"
+              role="tab"
+              aria-selected="false"
+              tabindex="-1"
+              aria-controls="panel-sql"
+              data-i18n="sqlTab"
+            >
+              SQL
+            </button>
+            <button
+              id="tab-evidence"
+              role="tab"
+              aria-selected="false"
+              tabindex="-1"
+              aria-controls="panel-evidence"
+              data-i18n="evidenceTab"
+            >
+              Evidence
+            </button>
+          </div>
+          <div id="metrics" class="metrics"></div>
+          <div id="panel-table" role="tabpanel" aria-labelledby="tab-table" tabindex="0">
+            <div id="output-empty" class="empty-state">
+              <div class="empty-symbol" aria-hidden="true"></div>
+              <h3 data-i18n="emptyTitle">Your results appear here</h3>
+              <p data-i18n="emptyHint">Choose your data and run a query to begin.</p>
+            </div>
+            <p id="answer"></p>
+            <div id="table"></div>
+          </div>
+          <div
+            id="panel-sql"
+            class="code-panel"
+            role="tabpanel"
+            aria-labelledby="tab-sql"
+            tabindex="0"
+            hidden
+          >
+            <span class="code-label" data-i18n="generatedSql">Generated SQL</span>
+            <pre id="sql" data-i18n="noSql">No query generated yet.</pre>
+            <button id="review-sql" class="secondary" data-i18n="reviewSql" hidden>
+              Edit proposed SQL
+            </button>
+          </div>
+          <div
+            id="panel-evidence"
+            class="code-panel"
+            role="tabpanel"
+            aria-labelledby="tab-evidence"
+            tabindex="0"
+            hidden
+          >
+            <span class="code-label" data-i18n="evidence">Plan & semantic evidence</span>
+            <pre id="details" data-i18n="noEvidence">
+Run a query to inspect its plan and evidence.</pre
+            >
+          </div>
+          <div id="mutation" hidden>
+            <strong data-i18n="mutationTitle">Review this change</strong>
+            <p id="mutation-description"></p>
+            <span class="code-label" data-i18n="proposedValues">Proposed values</span>
+            <pre id="mutation-values"></pre>
+            <button id="commit" data-i18n="commit">Commit changes</button>
+          </div>
+        </section>
+        <h2 class="section-label tools-heading">
+          <span class="index">04</span><span data-i18n="dataTools">Manage data</span>
+        </h2>
+        <div class="tools">
+          <details id="text-import-panel" class="tool">
+            <summary data-extract-label="title"></summary>
+            <div class="tool-body">
+              <p data-extract-label="hint"></p>
+              <fieldset id="extract-definition">
+                <label for="extract-destination" data-extract-label="destination"></label><select id="extract-destination"></select>
+                <label for="extract-dataset-name" data-extract-label="name"></label><input id="extract-dataset-name" maxlength="120" />
+                <label for="extract-row" data-extract-label="row"></label><textarea id="extract-row" rows="2" maxlength="4000"></textarea>
+                <label for="extract-mode" data-extract-label="mode"></label><select id="extract-mode"></select>
+                <h3 data-extract-label="columns"></h3><div id="extract-columns"></div>
+                <button id="extract-add-column" type="button" class="secondary" data-extract-label="add"></button>
+                <label for="extract-source" data-extract-label="source"></label><textarea id="extract-source" rows="8" spellcheck="false"></textarea>
+                <div class="actions"><button id="extract-file-button" type="button" class="secondary" data-extract-label="file"></button><span id="extract-file-name"></span></div><input id="extract-file" type="file" accept=".txt,text/plain" hidden />
+                <label class="extract-check"><input id="extract-automatic" type="checkbox" /><span data-extract-label="automatic"></span></label>
+                <button id="extract-run" type="button" data-extract-label="run"></button>
+              </fieldset>
+              <p id="extract-status" role="status" aria-live="polite"></p>
+              <div id="extract-results"></div>
+              <button id="extract-commit" type="button" data-extract-label="commit" hidden></button>
+            </div>
+          </details>
+          <details id="import-panel" class="tool">
+            <summary data-i18n="importTitle">Import dataset</summary>
+            <div class="tool-body">
+              <p data-i18n="importHint">
+                Paste a JSON object with a name and rows. Column types are inferred unless provided.
+              </p>
+              <label for="import-json" data-i18n="datasetJson">Dataset JSON</label>
+              <textarea
+                id="import-json"
+                rows="4"
+                spellcheck="false"
+                placeholder='{"name":"dataset","rows":[{"id":1,"value":42}],"primary_key":["id"]}'
+              ></textarea>
+              <div class="actions">
+                <span id="import-status" role="status"></span
+                ><button id="import" data-i18n="importAction">Import dataset</button>
+              </div>
+            </div>
+          </details>
+          <details id="feature-panel" class="tool">
+            <summary data-i18n="featureTitle">Semantic features</summary>
+            <div class="tool-body">
+              <p data-i18n="featureHint">
+                Define a meaning, test it, and activate a reviewed revision for future queries.
+              </p>
+              <label for="features" data-i18n="feature">Feature</label
+              ><select id="features">
+                <option value="" data-i18n="chooseFeature">Choose a feature</option>
+              </select>
+              <div class="actions">
+                <button id="new-feature" class="secondary" data-i18n="newFeature">
+                  New definition</button
+                ><button id="preview-feature" class="secondary" data-i18n="testFeature">
+                  Test definition</button
+                ><button id="refresh-features" class="secondary" data-i18n="refreshFeatures">
+                  Refresh coverage
+                </button>
+              </div>
+              <label for="feature-json" data-i18n="definition">Definition</label>
+              <textarea
+                id="feature-json"
+                rows="7"
+                spellcheck="false"
+                placeholder='{"dataset_id":"…","name":"…","column":"…","definition":"…","kind":"noul","context_columns":[],"aliases":[],"maintain":false}'
+              ></textarea>
+              <div class="actions">
+                <span id="feature-status" role="status"></span
+                ><button id="create-feature" data-i18n="saveFeature">Save candidate</button>
+              </div>
+              <label for="feature-review" data-i18n="review">Review examples & reason</label>
+              <textarea
+                id="feature-review"
+                rows="4"
+                spellcheck="false"
+                data-i18n-placeholder="reviewPlaceholder"
+              ></textarea>
+              <div class="actions">
+                <button id="activate-feature" data-i18n="activateFeature">Activate revision</button>
+              </div>
+              <details class="feature-evidence">
+                <summary data-i18n="featureEvidence">Feature evidence & maintenance</summary>
+                <pre id="feature-details"></pre>
+              </details>
+            </div>
+          </details>
+        </div>
+        <footer>
+          <span data-i18n="footer"
+            >Read results directly. Preview and review changes before committing.</span
+          ><span class="footer-mark" aria-hidden="true">JEV / SDD</span>
+        </footer>
+      </main>
+    </div>
+  </body>
+</html>

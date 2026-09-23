@@ -1,0 +1,376 @@
+{
+  "spec_version": "1.0",
+  "release": "0.4.0",
+  "status": "Implemented API catalog; see usage examples and contracts for limits.",
+  "functions": [
+    {
+      "id": "F01",
+      "name": "JEV.PROMPT",
+      "basis": "SDD composition",
+      "what": "Ask a typed question over one or more subjects.",
+      "usecase": "Apply the same typed question to several subjects without writing a separate operator for each task.",
+      "signature": "prompt(subjects, instructions, output_type, criteria=None)",
+      "output": "A decision per subject. output_type is noul, choice, or score; the latter two require criteria."
+    },
+    {
+      "id": "F02",
+      "name": "JEV.NOUL",
+      "basis": "Native primitive",
+      "what": "Evaluate one proposition about a supplied state.",
+      "usecase": "Test whether supplied evidence supports one proposition, while preserving an unresolved answer.",
+      "signature": "noul(state, proposition, criteria=None)",
+      "output": "A Boolean decision in value[\"0\"], or an unresolved observation with its raw probability."
+    },
+    {
+      "id": "F03",
+      "name": "JEV.CHOICE",
+      "basis": "Native primitive",
+      "what": "Choose from described, caller-supplied options.",
+      "usecase": "Choose one of a small set of alternatives with explicit descriptions.",
+      "signature": "choice(state, question, options)",
+      "output": "The selected option ID; inspect the observation for probabilities."
+    },
+    {
+      "id": "F04",
+      "name": "JEV.SCORE",
+      "basis": "Native primitive",
+      "what": "Rate a subject against ordered levels.",
+      "usecase": "Assess intensity or quality against ordered levels; use SQL for exact arithmetic.",
+      "signature": "score(state, rubric_levels, instructions='Rate the subject against the supplied rubric')",
+      "output": "A numeric ordinal score from 0 to 2 for this three-level rubric."
+    },
+    {
+      "id": "F05",
+      "name": "JEV.CLASSIFY",
+      "basis": "SDD composition",
+      "what": "Assign subjects to a taxonomy.",
+      "usecase": "Assign each record to one described category.",
+      "signature": "classify(subjects, taxonomy_rev)",
+      "output": "One category per subject; an unknown option is added automatically."
+    },
+    {
+      "id": "F06",
+      "name": "JEV.TAG",
+      "basis": "SDD composition",
+      "what": "Evaluate several independent concepts for every subject.",
+      "usecase": "Apply several independent labels when a record may match more than one.",
+      "signature": "tag(subjects, concept_revs)",
+      "output": "Subject IDs map to concept-indexed decisions; compatible questions share a context."
+    },
+    {
+      "id": "F07",
+      "name": "JEV.FILTER",
+      "basis": "SDD composition",
+      "what": "Separate matching, rejected and unresolved subjects.",
+      "usecase": "Keep records that meet a semantic condition and track unresolved membership.",
+      "signature": "filter(relation, concept_rev, mode='exhaustive')",
+      "output": "matches, rejected and unresolved lists. The supplied population is evaluated exhaustively."
+    },
+    {
+      "id": "F08",
+      "name": "JEV.RANK",
+      "basis": "SDD composition",
+      "what": "Rank a population using pointwise evaluation.",
+      "usecase": "Prioritize a population with a shared rubric and preserve equal scores.",
+      "signature": "rank(subjects, criterion, method='pointwise', top_k=None)",
+      "output": "ranked rows with scores and competition ranks; ties at the cutoff remain included."
+    },
+    {
+      "id": "F09",
+      "name": "JEV.COMPARE",
+      "basis": "SDD composition",
+      "what": "Compare two supplied values directly.",
+      "usecase": "Compare two supplied items under one criterion.",
+      "signature": "compare(left, right, criterion)",
+      "output": "A left, right or tie decision; insufficient evidence remains UNKNOWN."
+    },
+    {
+      "id": "F10",
+      "name": "JEV.RERANK",
+      "basis": "SDD composition",
+      "what": "Reorder an existing retrieval shortlist.",
+      "usecase": "Reorder an existing shortlist using a more specific criterion.",
+      "signature": "rerank(query, candidates, criterion, top_k=10)",
+      "output": "Ranked candidates with shortlist scope; this does not establish a corpus-wide top result."
+    },
+    {
+      "id": "F11",
+      "name": "JEV.COMPOSITE_SCORE",
+      "basis": "SDD composition",
+      "what": "Combine independently scored dimensions.",
+      "usecase": "Combine several explicit rubric dimensions with chosen weights.",
+      "signature": "composite_score(subjects, rubrics, weights, missing_policy='unknown')",
+      "output": "Normalized composite and per-dimension decisions. Reweighting reuses compatible raw scores."
+    },
+    {
+      "id": "F12",
+      "name": "JEV.EXTRACT",
+      "basis": "SDD composition",
+      "what": "Select exact spans from a source.",
+      "usecase": "Select source passages that satisfy a description without generating missing text.",
+      "signature": "extract(subjects, field_spec, candidates=None, cardinality='one')",
+      "output": "Exact text, source ID and character offsets. Omit candidates to use sentence spans; use many for independent span decisions."
+    },
+    {
+      "id": "F13",
+      "name": "JEV.EXTRACT_DATE",
+      "basis": "SDD composition",
+      "what": "Normalize supported date expressions with explicit context.",
+      "usecase": "Find a date in the source and normalize a supported explicit date format.",
+      "signature": "extract_date(subjects, reference_time=None, timezone=None, locale=None)",
+      "output": "Source spans with normalized dates. Missing context and unsupported expressions stay unresolved."
+    },
+    {
+      "id": "F14",
+      "name": "JEV.FIND",
+      "basis": "SDD composition",
+      "what": "Find relevant source sentences within a declared corpus.",
+      "usecase": "Locate passages relevant to a question before further interpretation.",
+      "signature": "find(corpus, query, scope=None, max_spans=20, mode='exhaustive')",
+      "output": "Source spans. Pass a registered dataset scope as corpus when needed; scope remains null and mode exhaustive."
+    },
+    {
+      "id": "F15",
+      "name": "JEV.STRUCTURE",
+      "basis": "SDD composition",
+      "what": "Group adjacent source lines and classify the blocks.",
+      "usecase": "Group source passages into described sections while retaining their identity.",
+      "signature": "structure(lines, block_taxonomy)",
+      "output": "Blocks with line offsets and type decisions; original source text round-trips exactly."
+    },
+    {
+      "id": "F16",
+      "name": "JEV.ROUTE",
+      "basis": "SDD composition",
+      "what": "Choose a handler and arguments from explicit allowlists.",
+      "usecase": "Choose an allowed handler for an input; dispatch remains the caller's responsibility.",
+      "signature": "route(request, allowed_handlers, candidate_args=None)",
+      "output": "Handler and typed argument decisions. The handler is not executed."
+    },
+    {
+      "id": "F17",
+      "name": "JEV.JOIN",
+      "basis": "SDD composition",
+      "what": "Join two populations using a semantic predicate.",
+      "usecase": "Find semantically related pairs across two supplied populations.",
+      "signature": "join(left, right, predicate, candidate_policy=None, mode='exhaustive', join_type='inner')",
+      "output": "Accepted edges, unresolved pairs and exhaustive unmatched rows. join_type also supports inner and anti."
+    },
+    {
+      "id": "F18",
+      "name": "JEV.ALIGN",
+      "basis": "SDD composition",
+      "what": "Propose identity matches and check companion fields.",
+      "usecase": "Evaluate candidate identity matches without merging stored records.",
+      "signature": "align(left, right, candidate_policy, identity_definition)",
+      "output": "Identity and field-consistency decisions. No IDs are merged."
+    },
+    {
+      "id": "F19",
+      "name": "JEV.VERIFY",
+      "basis": "SDD composition",
+      "what": "Assess support and opposition for one claim.",
+      "usecase": "Check whether evidence supports, opposes or leaves a claim unresolved.",
+      "signature": "verify(claim, evidence, scope=None)",
+      "output": "A support, opposition, conflict or insufficient stance, with separate evidence decisions."
+    },
+    {
+      "id": "F20",
+      "name": "JEV.AGGREGATE",
+      "basis": "SDD composition",
+      "what": "Run SQL arithmetic over accepted semantic labels.",
+      "usecase": "Compute a supported aggregate over evaluated decisions and retain coverage.",
+      "signature": "aggregate(relation, semantic_predicates, group_by=None, metric=None, mode='exhaustive')",
+      "output": "Groups with complete and known-subset values, population counts and unresolved counts. Metrics: count, sum, avg, min, max; default null policy is ignore."
+    },
+    {
+      "id": "F21",
+      "name": "JEV.SUMMARY_EXTRACTIVE",
+      "basis": "SDD composition",
+      "what": "Select existing sentences for a requested facet.",
+      "usecase": "Build a summary from selected original passages.",
+      "signature": "summary_extractive(subjects, facet, max_spans=10, diversity_policy='exact_dedup')",
+      "output": "Source excerpts and omitted-candidate count. diversity_policy also supports exact_dedup."
+    },
+    {
+      "id": "F22",
+      "name": "JEV.RELATE",
+      "basis": "SDD composition",
+      "what": "Assess a directed relationship between supplied records.",
+      "usecase": "Identify described relationships with evidence tied to the source.",
+      "signature": "relate(left, right, relation_rev, evidence_policy=None, mode='exhaustive', candidate_policy=None)",
+      "output": "Directed edges, separate support/opposition decisions and whole-source evidence offsets."
+    },
+    {
+      "id": "F23",
+      "name": "JEV.COVER",
+      "basis": "SDD composition",
+      "what": "Check obligations against an evidence population.",
+      "usecase": "Check whether supplied evidence covers each declared requirement.",
+      "signature": "cover(obligations, evidence_scope, relation_rev=None, mode='exhaustive')",
+      "output": "A stance and supporting-source IDs for each obligation, scoped to the supplied evidence."
+    },
+    {
+      "id": "F24",
+      "name": "JEV.TRACE",
+      "basis": "SDD composition",
+      "what": "Reconstruct reported process states from ordered events.",
+      "usecase": "Identify a bounded event sequence in uniquely timestamped records.",
+      "signature": "trace(records, entity_scope, process_rev, event_time)",
+      "output": "Per-entity timelines and possible/current states. Timestamps need offsets and unambiguous ordering."
+    },
+    {
+      "id": "F25",
+      "name": "JEV.DISCOVER",
+      "basis": "SDD composition",
+      "what": "Propose source-exemplar concepts for review.",
+      "usecase": "Propose reusable concepts from examples for later human review.",
+      "signature": "discover(records, catalog_rev, facet, discovery_budget=None)",
+      "output": "Provisional candidate revisions and examples. Holdout content must be separate; promotion is a later reviewer action."
+    },
+    {
+      "id": "F26",
+      "name": "JEV.CONTRAST",
+      "basis": "SDD composition",
+      "what": "Compare concept rates across disjoint populations.",
+      "usecase": "Describe differences between declared populations without inferring causation.",
+      "signature": "contrast(left, right, concepts, unit, mode='exhaustive', discovery_split=None)",
+      "output": "Rates, denominators, uncertainty bounds and descriptive differences; the declared unit must be unique and cohorts disjoint."
+    },
+    {
+      "id": "F27",
+      "name": "JEV.RESOLVE",
+      "basis": "SDD composition",
+      "what": "Stop adaptive evaluation when an answer is established.",
+      "usecase": "Stop evaluating once a declared decision condition is established.",
+      "signature": "resolve(plan, objective, budget=None, wave_size=16)",
+      "output": "An answer, count bounds and wave count; untouched subjects remain NOT_EVALUATED. Also supports count_at_least, count_at_most and exact_count."
+    },
+    {
+      "id": "F28",
+      "name": "JEV.STATE_SCAN",
+      "basis": "SDD composition",
+      "what": "Evaluate finite-state transitions in parallel under incoming-state hypotheses.",
+      "usecase": "Process transitions when the caller can describe sufficient state.",
+      "signature": "state_scan(blocks, state_machine_rev, initial_state, uncertainty_policy='propagate_sets')",
+      "output": "Conditional transition tables, composed summaries and possible states. Unknown transitions propagate sets."
+    },
+    {
+      "id": "F29",
+      "name": "JEV.MATCH",
+      "basis": "SDD composition",
+      "what": "Find bounded event patterns with explicit bindings.",
+      "usecase": "Find bounded multi-record patterns with verified relationships.",
+      "signature": "match(records, typed_pattern, candidate_policy=None, max_matches=100)",
+      "output": "Verified node-to-record bindings, candidate counts and truncation state."
+    },
+    {
+      "id": "F30",
+      "name": "JEV.EVIDENCE_JOIN",
+      "basis": "SDD composition",
+      "what": "Evaluate isolated evidence bundles for claims.",
+      "usecase": "Combine evidence from several sources when no single source is sufficient.",
+      "signature": "evidence_join(claims, candidate_sources, max_bundle_size=2, scope=None)",
+      "output": "Support/opposition stances per singleton or pair bundle; at most eight candidate sources."
+    },
+    {
+      "id": "F31",
+      "name": "JEV.EVALUATE",
+      "basis": "SDD composition",
+      "what": "Submit explicit typed work items to the shared runtime.",
+      "usecase": "Submit an explicit set of typed questions with common execution controls.",
+      "signature": "evaluate(work_items, limits=None, retry_policy=None, persist=True)",
+      "output": "Decisions keyed by work ID, with cache and budget accounting. Set budgets in the outer limits field."
+    },
+    {
+      "id": "F32",
+      "name": "JEV.ENSURE_SEMANTICS",
+      "basis": "SDD composition",
+      "what": "Fill or reuse semantic observations for subject and concept revisions.",
+      "usecase": "Reuse compatible observations and schedule only missing semantic work.",
+      "signature": "ensure_semantics(subject_revs, concept_revs, evaluator_revs=None, budget=None)",
+      "output": "Concept decisions per subject. Optional evaluator_revs must match the configured pinned model."
+    },
+    {
+      "id": "F33",
+      "name": "JEV.MATERIALIZE",
+      "basis": "SDD composition",
+      "what": "Publish a generation for an approved concept and registered population.",
+      "usecase": "Publish resolved values for an approved definition and registered source.",
+      "signature": "materialize(concept_rev, target_scope, refresh_policy, budget=None)",
+      "output": "A generation, published flag and observations. on_change requires max_refreshes (1–100) and interval_seconds (at least 30)."
+    },
+    {
+      "id": "F34",
+      "name": "JEV.REFRESH",
+      "basis": "SDD composition",
+      "what": "Invalidate specified source dependencies and rebuild selected generations.",
+      "usecase": "Rebuild a materialized generation after its source dependencies change.",
+      "signature": "refresh(change_set, policies=None, budget=None)",
+      "output": "Invalidated observation IDs and replacement generations, using the outer execution budget."
+    },
+    {
+      "id": "F35",
+      "name": "JEV.REVIEW",
+      "basis": "SDD composition",
+      "what": "Save a human assertion without overwriting the model evidence.",
+      "usecase": "Record a human correction without replacing the original model observation.",
+      "signature": "review(observations, sampling_policy=None, reviewer_role=None)",
+      "output": "Saved assertions and confirmation that raw evidence is unchanged."
+    },
+    {
+      "id": "F36",
+      "name": "JEV.PROMOTE",
+      "basis": "SDD composition",
+      "what": "Approve a provisional concept using independently reviewed evidence.",
+      "usecase": "Approve a provisional definition after reviewing independent examples.",
+      "signature": "promote(candidate_rev, owner, validation_report, retention_policy)",
+      "output": "An approved revision ID; no backfill starts until MATERIALIZE."
+    },
+    {
+      "id": "F37",
+      "name": "JEV.SELECT_SCHEMA",
+      "basis": "SDD composition",
+      "what": "Select relevant authorized tables and fields.",
+      "usecase": "Select relevant catalog elements for a natural-language objective.",
+      "signature": "select_schema(request, authorized_catalog=None, candidate_policy=None)",
+      "output": "Selected tables/columns, catalog alternatives and approved relationship metadata."
+    },
+    {
+      "id": "F38",
+      "name": "JEV.PLAN_SQL",
+      "basis": "SDD composition",
+      "what": "Construct a staged SQL proposal for a natural-language request.",
+      "usecase": "Obtain a SQL proposal for inspection without executing it.",
+      "signature": "plan_sql(request, catalog_rev=None, grammar_rev='staged-v1', mode='proposal')",
+      "output": "A reviewable plan and executed=false. A held proposal remains available; this function does not execute SQL."
+    },
+    {
+      "id": "F39",
+      "name": "JEV.EXPLAIN_PLAN",
+      "basis": "SDD composition",
+      "what": "Estimate missing semantic work before inference.",
+      "usecase": "Estimate required semantic work before dispatching provider calls.",
+      "signature": "explain_plan(typed_plan, source_stats=None, limits=None, cache_stats=None)",
+      "output": "Judgments, conservative requests/cost bounds and policy warnings; this is an estimate, not an approval or guaranteed duration."
+    },
+    {
+      "id": "F40",
+      "name": "JEV.CLASSIFY_HIERARCHY",
+      "basis": "SDD composition",
+      "what": "Classify along bounded parallel taxonomy frontiers.",
+      "usecase": "Select a category through a supplied hierarchy when one flat choice is unsuitable.",
+      "signature": "classify_hierarchy(subjects, taxonomy_rev, beam_width=2, depth_cap=6)",
+      "output": "Candidate paths, heuristic weights, dropped branches and unfinished paths."
+    },
+    {
+      "id": "F41",
+      "name": "JEV.EXTRACT_TABLE",
+      "basis": "SDD composition",
+      "what": "Create typed, source-backed rows using descriptions of records and columns.",
+      "usecase": "Turn a document into typed rows using descriptions of records and columns.",
+      "signature": "extract_table(text, columns, row_description, record_mode='auto', max_rows=200)",
+      "output": "Rows with exact source offsets, typed values and per-cell states. Missing or uncertain values remain unresolved. Four stages run by default. See TEXT_IMPORT.md for automatic insertion."
+    }
+  ]
+}

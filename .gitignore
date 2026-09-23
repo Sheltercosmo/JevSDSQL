@@ -1,0 +1,24 @@
+# Local configuration and data
+.env
+.env.*
+!.env.example
+.runtime/
+artifacts/
+reports/
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
+*.sqlite-*
+
+# Python and tooling
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+build/
+dist/
+node_modules/

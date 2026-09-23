@@ -1,0 +1,1032 @@
+[
+  {
+    "operator": "JEV.PROMPT",
+    "purpose": "Ask a typed question over one or more subjects.",
+    "request": {
+      "operator": "JEV.PROMPT",
+      "arguments": {
+        "subjects": [
+          "The requested work was completed yesterday."
+        ],
+        "instructions": "The source reports completed work, rather than a promise or request.",
+        "output_type": "noul"
+      }
+    },
+    "returns": "A decision per subject. output_type is noul, choice, or score; the latter two require criteria.",
+    "when_to_use": "Apply the same typed question to several subjects without writing a separate operator for each task."
+  },
+  {
+    "operator": "JEV.NOUL",
+    "purpose": "Evaluate one proposition about a supplied state.",
+    "request": {
+      "operator": "JEV.NOUL",
+      "arguments": {
+        "state": "The requested work was completed yesterday.",
+        "proposition": "The source reports completed work, rather than a promise or request."
+      }
+    },
+    "returns": "A Boolean decision in value[\"0\"], or an unresolved observation with its raw probability.",
+    "when_to_use": "Test whether supplied evidence supports one proposition, while preserving an unresolved answer."
+  },
+  {
+    "operator": "JEV.CHOICE",
+    "purpose": "Choose from described, caller-supplied options.",
+    "request": {
+      "operator": "JEV.CHOICE",
+      "arguments": {
+        "state": "Please send the updated file.",
+        "question": "Which category fits the message?",
+        "options": {
+          "request": "Asks someone to act",
+          "update": "Reports a status",
+          "unknown": "Insufficient information"
+        }
+      }
+    },
+    "returns": "The selected option ID; inspect the observation for probabilities.",
+    "when_to_use": "Choose one of a small set of alternatives with explicit descriptions."
+  },
+  {
+    "operator": "JEV.SCORE",
+    "purpose": "Rate a subject against ordered levels.",
+    "request": {
+      "operator": "JEV.SCORE",
+      "arguments": {
+        "state": "The requested work was completed yesterday.",
+        "rubric_levels": [
+          "No completed work",
+          "Ambiguous completion",
+          "Explicitly completed work"
+        ]
+      }
+    },
+    "returns": "A numeric ordinal score from 0 to 2 for this three-level rubric.",
+    "when_to_use": "Assess intensity or quality against ordered levels; use SQL for exact arithmetic."
+  },
+  {
+    "operator": "JEV.CLASSIFY",
+    "purpose": "Assign subjects to a taxonomy.",
+    "request": {
+      "operator": "JEV.CLASSIFY",
+      "arguments": {
+        "subjects": [
+          {
+            "id": "a",
+            "text": "The requested work was completed yesterday."
+          },
+          {
+            "id": "b",
+            "text": "Please finish the work tomorrow."
+          }
+        ],
+        "taxonomy_rev": {
+          "instructions": "Classify the message purpose.",
+          "options": {
+            "request": "Asks someone to act",
+            "update": "Reports a status"
+          }
+        }
+      }
+    },
+    "returns": "One category per subject; an unknown option is added automatically.",
+    "when_to_use": "Assign each record to one described category."
+  },
+  {
+    "operator": "JEV.TAG",
+    "purpose": "Evaluate several independent concepts for every subject.",
+    "request": {
+      "operator": "JEV.TAG",
+      "arguments": {
+        "subjects": [
+          {
+            "id": "a",
+            "text": "The requested work was completed yesterday."
+          },
+          {
+            "id": "b",
+            "text": "Please finish the work tomorrow."
+          }
+        ],
+        "concept_revs": [
+          "The source reports completed work, rather than a promise or request.",
+          "The source asks for future action."
+        ]
+      }
+    },
+    "returns": "Subject IDs map to concept-indexed decisions; compatible questions share a context.",
+    "when_to_use": "Apply several independent labels when a record may match more than one."
+  },
+  {
+    "operator": "JEV.FILTER",
+    "purpose": "Separate matching, rejected and unresolved subjects.",
+    "request": {
+      "operator": "JEV.FILTER",
+      "arguments": {
+        "relation": [
+          {
+            "id": "a",
+            "text": "The requested work was completed yesterday."
+          },
+          {
+            "id": "b",
+            "text": "Please finish the work tomorrow."
+          }
+        ],
+        "concept_rev": "The source reports completed work, rather than a promise or request."
+      }
+    },
+    "returns": "matches, rejected and unresolved lists. The supplied population is evaluated exhaustively.",
+    "when_to_use": "Keep records that meet a semantic condition and track unresolved membership."
+  },
+  {
+    "operator": "JEV.RANK",
+    "purpose": "Rank a population using pointwise evaluation.",
+    "request": {
+      "operator": "JEV.RANK",
+      "arguments": {
+        "subjects": [
+          {
+            "id": "a",
+            "text": "The requested work was completed yesterday."
+          },
+          {
+            "id": "b",
+            "text": "Please finish the work tomorrow."
+          }
+        ],
+        "criterion": {
+          "type": "score",
+          "instructions": "Rate how clearly the record establishes completed work.",
+          "criteria": [
+            "Absent",
+            "Uncertain",
+            "Explicit"
+          ]
+        },
+        "top_k": 1
+      }
+    },
+    "returns": "ranked rows with scores and competition ranks; ties at the cutoff remain included.",
+    "when_to_use": "Prioritize a population with a shared rubric and preserve equal scores."
+  },
+  {
+    "operator": "JEV.COMPARE",
+    "purpose": "Compare two supplied values directly.",
+    "request": {
+      "operator": "JEV.COMPARE",
+      "arguments": {
+        "left": "Finished and verified.",
+        "right": "Scheduled for tomorrow.",
+        "criterion": "Which source more clearly establishes completed work?"
+      }
+    },
+    "returns": "A left, right or tie decision; insufficient evidence remains UNKNOWN.",
+    "when_to_use": "Compare two supplied items under one criterion."
+  },
+  {
+    "operator": "JEV.RERANK",
+    "purpose": "Reorder an existing retrieval shortlist.",
+    "request": {
+      "operator": "JEV.RERANK",
+      "arguments": {
+        "query": "completed work",
+        "candidates": [
+          {
+            "id": "a",
+            "text": "The requested work was completed yesterday."
+          },
+          {
+            "id": "b",
+            "text": "Please finish the work tomorrow."
+          }
+        ],
+        "criterion": "The source reports completed work, rather than a promise or request.",
+        "top_k": 2
+      }
+    },
+    "returns": "Ranked candidates with shortlist scope; this does not establish a corpus-wide top result.",
+    "when_to_use": "Reorder an existing shortlist using a more specific criterion."
+  },
+  {
+    "operator": "JEV.COMPOSITE_SCORE",
+    "purpose": "Combine independently scored dimensions.",
+    "request": {
+      "operator": "JEV.COMPOSITE_SCORE",
+      "arguments": {
+        "subjects": [
+          "The requested work was completed yesterday."
+        ],
+        "rubrics": {
+          "completion": {
+            "instructions": "Rate completion evidence.",
+            "criteria": [
+              "Absent",
+              "Explicit"
+            ]
+          },
+          "clarity": {
+            "instructions": "Rate clarity of the status.",
+            "criteria": [
+              "Unclear",
+              "Partial",
+              "Clear"
+            ]
+          }
+        },
+        "weights": {
+          "completion": 2,
+          "clarity": 1
+        },
+        "missing_policy": "unknown"
+      }
+    },
+    "returns": "Normalized composite and per-dimension decisions. Reweighting reuses compatible raw scores.",
+    "when_to_use": "Combine several explicit rubric dimensions with chosen weights."
+  },
+  {
+    "operator": "JEV.EXTRACT",
+    "purpose": "Select exact spans from a source.",
+    "request": {
+      "operator": "JEV.EXTRACT",
+      "arguments": {
+        "subjects": [
+          {
+            "id": "note",
+            "text": "Work finished. Reference AB-42."
+          }
+        ],
+        "field_spec": "Select the span containing the reference identifier.",
+        "candidates": {
+          "note": [
+            {
+              "start": 14,
+              "end": 30
+            }
+          ]
+        },
+        "cardinality": "one"
+      }
+    },
+    "returns": "Exact text, source ID and character offsets. Omit candidates to use sentence spans; use many for independent span decisions.",
+    "when_to_use": "Select source passages that satisfy a description without generating missing text."
+  },
+  {
+    "operator": "JEV.EXTRACT_DATE",
+    "purpose": "Normalize supported date expressions with explicit context.",
+    "request": {
+      "operator": "JEV.EXTRACT_DATE",
+      "arguments": {
+        "subjects": [
+          "The work finished yesterday."
+        ],
+        "reference_time": "2026-09-22T12:00:00+00:00",
+        "timezone": "UTC",
+        "locale": "en-GB"
+      }
+    },
+    "returns": "Source spans with normalized dates. Missing context and unsupported expressions stay unresolved.",
+    "when_to_use": "Find a date in the source and normalize a supported explicit date format."
+  },
+  {
+    "operator": "JEV.FIND",
+    "purpose": "Find relevant source sentences within a declared corpus.",
+    "request": {
+      "operator": "JEV.FIND",
+      "arguments": {
+        "corpus": [
+          {
+            "id": "a",
+            "text": "The requested work was completed yesterday."
+          },
+          {
+            "id": "b",
+            "text": "Please finish the work tomorrow."
+          }
+        ],
+        "query": "The source reports completed work, rather than a promise or request.",
+        "max_spans": 10
+      }
+    },
+    "returns": "Source spans. Pass a registered dataset scope as corpus when needed; scope remains null and mode exhaustive.",
+    "when_to_use": "Locate passages relevant to a question before further interpretation."
+  },
+  {
+    "operator": "JEV.STRUCTURE",
+    "purpose": "Group adjacent source lines and classify the blocks.",
+    "request": {
+      "operator": "JEV.STRUCTURE",
+      "arguments": {
+        "lines": [
+          "Status\n",
+          "The work is complete.\n"
+        ],
+        "block_taxonomy": {
+          "options": {
+            "heading": "A section heading",
+            "paragraph": "A prose paragraph"
+          }
+        }
+      }
+    },
+    "returns": "Blocks with line offsets and type decisions; original source text round-trips exactly.",
+    "when_to_use": "Group source passages into described sections while retaining their identity."
+  },
+  {
+    "operator": "JEV.ROUTE",
+    "purpose": "Choose a handler and arguments from explicit allowlists.",
+    "request": {
+      "operator": "JEV.ROUTE",
+      "arguments": {
+        "request": "Find recently completed work.",
+        "allowed_handlers": {
+          "lookup": "Search existing records",
+          "summarize": "Select source excerpts"
+        },
+        "candidate_args": {
+          "lookup": {
+            "period": {
+              "recent": "Recent records",
+              "all": "All records"
+            }
+          }
+        }
+      }
+    },
+    "returns": "Handler and typed argument decisions. The handler is not executed.",
+    "when_to_use": "Choose an allowed handler for an input; dispatch remains the caller's responsibility."
+  },
+  {
+    "operator": "JEV.JOIN",
+    "purpose": "Join two populations using a semantic predicate.",
+    "request": {
+      "operator": "JEV.JOIN",
+      "arguments": {
+        "left": [
+          {
+            "id": "a",
+            "text": "The export failed."
+          }
+        ],
+        "right": [
+          {
+            "id": "b",
+            "text": "The export failure was fixed."
+          }
+        ],
+        "predicate": "The right record addresses the same issue reported on the left.",
+        "candidate_policy": {
+          "kind": "all_pairs"
+        },
+        "join_type": "left"
+      }
+    },
+    "returns": "Accepted edges, unresolved pairs and exhaustive unmatched rows. join_type also supports inner and anti.",
+    "when_to_use": "Find semantically related pairs across two supplied populations."
+  },
+  {
+    "operator": "JEV.ALIGN",
+    "purpose": "Propose identity matches and check companion fields.",
+    "request": {
+      "operator": "JEV.ALIGN",
+      "arguments": {
+        "left": [
+          {
+            "id": "a",
+            "name": "Project Orion"
+          }
+        ],
+        "right": [
+          {
+            "id": "b",
+            "name": "Orion project"
+          }
+        ],
+        "candidate_policy": {
+          "kind": "all_pairs"
+        },
+        "identity_definition": {
+          "instructions": "The records name the same project.",
+          "fields": [
+            {
+              "left": "name",
+              "right": "name"
+            }
+          ]
+        }
+      }
+    },
+    "returns": "Identity and field-consistency decisions. No IDs are merged.",
+    "when_to_use": "Evaluate candidate identity matches without merging stored records."
+  },
+  {
+    "operator": "JEV.VERIFY",
+    "purpose": "Assess support and opposition for one claim.",
+    "request": {
+      "operator": "JEV.VERIFY",
+      "arguments": {
+        "claim": "The work is complete.",
+        "evidence": [
+          "The requested work was completed yesterday.",
+          "A later note says the work was reopened."
+        ]
+      }
+    },
+    "returns": "A support, opposition, conflict or insufficient stance, with separate evidence decisions.",
+    "when_to_use": "Check whether evidence supports, opposes or leaves a claim unresolved."
+  },
+  {
+    "operator": "JEV.AGGREGATE",
+    "purpose": "Run SQL arithmetic over accepted semantic labels.",
+    "request": {
+      "operator": "JEV.AGGREGATE",
+      "arguments": {
+        "relation": [
+          {
+            "id": "a",
+            "team": "North",
+            "amount": "12.30",
+            "text": "The requested work was completed yesterday."
+          },
+          {
+            "id": "b",
+            "team": "North",
+            "amount": "5.20",
+            "text": "Work is pending."
+          }
+        ],
+        "semantic_predicates": [
+          "The source reports completed work, rather than a promise or request."
+        ],
+        "group_by": [
+          "team"
+        ],
+        "metric": {
+          "kind": "sum",
+          "field": "amount",
+          "value_type": "decimal"
+        }
+      }
+    },
+    "returns": "Groups with complete and known-subset values, population counts and unresolved counts. Metrics: count, sum, avg, min, max; default null policy is ignore.",
+    "when_to_use": "Compute a supported aggregate over evaluated decisions and retain coverage."
+  },
+  {
+    "operator": "JEV.SUMMARY_EXTRACTIVE",
+    "purpose": "Select existing sentences for a requested facet.",
+    "request": {
+      "operator": "JEV.SUMMARY_EXTRACTIVE",
+      "arguments": {
+        "subjects": [
+          {
+            "id": "a",
+            "text": "The requested work was completed yesterday."
+          },
+          {
+            "id": "b",
+            "text": "Please finish the work tomorrow."
+          }
+        ],
+        "facet": "Progress already completed.",
+        "max_spans": 2,
+        "diversity_policy": "per_source"
+      }
+    },
+    "returns": "Source excerpts and omitted-candidate count. diversity_policy also supports exact_dedup.",
+    "when_to_use": "Build a summary from selected original passages."
+  },
+  {
+    "operator": "JEV.RELATE",
+    "purpose": "Assess a directed relationship between supplied records.",
+    "request": {
+      "operator": "JEV.RELATE",
+      "arguments": {
+        "left": [
+          "The export fails on large files."
+        ],
+        "right": [
+          "Large-file export failures were fixed."
+        ],
+        "relation_rev": "The right record asserts a fix for the left record."
+      }
+    },
+    "returns": "Directed edges, separate support/opposition decisions and whole-source evidence offsets.",
+    "when_to_use": "Identify described relationships with evidence tied to the source."
+  },
+  {
+    "operator": "JEV.COVER",
+    "purpose": "Check obligations against an evidence population.",
+    "request": {
+      "operator": "JEV.COVER",
+      "arguments": {
+        "obligations": [
+          "The export must handle large files."
+        ],
+        "evidence_scope": [
+          "Large-file exports passed the test."
+        ]
+      }
+    },
+    "returns": "A stance and supporting-source IDs for each obligation, scoped to the supplied evidence.",
+    "when_to_use": "Check whether supplied evidence covers each declared requirement."
+  },
+  {
+    "operator": "JEV.TRACE",
+    "purpose": "Reconstruct reported process states from ordered events.",
+    "request": {
+      "operator": "JEV.TRACE",
+      "arguments": {
+        "records": [
+          {
+            "id": "a",
+            "item": "task-1",
+            "at": "2026-09-22T09:00:00Z",
+            "text": "The requested work was completed yesterday."
+          }
+        ],
+        "entity_scope": "item",
+        "event_time": "at",
+        "process_rev": {
+          "initial_state": "open",
+          "events": {
+            "completed": "Explicitly reports completed work",
+            "promised": "Only promises future work"
+          },
+          "transitions": {
+            "open": {
+              "completed": "done",
+              "promised": "open"
+            },
+            "done": {
+              "completed": "done",
+              "promised": "done"
+            }
+          }
+        }
+      }
+    },
+    "returns": "Per-entity timelines and possible/current states. Timestamps need offsets and unambiguous ordering.",
+    "when_to_use": "Identify a bounded event sequence in uniquely timestamped records."
+  },
+  {
+    "operator": "JEV.DISCOVER",
+    "purpose": "Propose source-exemplar concepts for review.",
+    "request": {
+      "operator": "JEV.DISCOVER",
+      "arguments": {
+        "records": [
+          "The export times out.",
+          "The export completes successfully."
+        ],
+        "catalog_rev": null,
+        "facet": "Failure mode",
+        "discovery_budget": {
+          "max_concepts": 2,
+          "neighbors": 2,
+          "holdout": [
+            "A fresh export attempt exceeded its time limit."
+          ]
+        }
+      }
+    },
+    "returns": "Provisional candidate revisions and examples. Holdout content must be separate; promotion is a later reviewer action.",
+    "when_to_use": "Propose reusable concepts from examples for later human review."
+  },
+  {
+    "operator": "JEV.CONTRAST",
+    "purpose": "Compare concept rates across disjoint populations.",
+    "request": {
+      "operator": "JEV.CONTRAST",
+      "arguments": {
+        "left": [
+          {
+            "id": "a",
+            "unit": "item-1",
+            "text": "The requested work was completed yesterday."
+          }
+        ],
+        "right": [
+          {
+            "id": "b",
+            "unit": "item-2",
+            "text": "The work is pending."
+          }
+        ],
+        "concepts": [
+          "The source reports completed work, rather than a promise or request."
+        ],
+        "unit": "unit"
+      }
+    },
+    "returns": "Rates, denominators, uncertainty bounds and descriptive differences; the declared unit must be unique and cohorts disjoint.",
+    "when_to_use": "Describe differences between declared populations without inferring causation."
+  },
+  {
+    "operator": "JEV.RESOLVE",
+    "purpose": "Stop adaptive evaluation when an answer is established.",
+    "request": {
+      "operator": "JEV.RESOLVE",
+      "arguments": {
+        "plan": {
+          "subjects": [
+            {
+              "id": "a",
+              "text": "The requested work was completed yesterday."
+            },
+            {
+              "id": "b",
+              "text": "Please finish the work tomorrow."
+            }
+          ],
+          "predicate": "The source reports completed work, rather than a promise or request."
+        },
+        "objective": {
+          "kind": "exists"
+        },
+        "wave_size": 1
+      }
+    },
+    "returns": "An answer, count bounds and wave count; untouched subjects remain NOT_EVALUATED. Also supports count_at_least, count_at_most and exact_count.",
+    "when_to_use": "Stop evaluating once a declared decision condition is established."
+  },
+  {
+    "operator": "JEV.STATE_SCAN",
+    "purpose": "Evaluate finite-state transitions in parallel under incoming-state hypotheses.",
+    "request": {
+      "operator": "JEV.STATE_SCAN",
+      "arguments": {
+        "blocks": [
+          "Work is promised for tomorrow.",
+          "The requested work was completed yesterday."
+        ],
+        "state_machine_rev": {
+          "states": {
+            "open": "Work remains unfinished",
+            "done": "Work is completed"
+          },
+          "initial_state": "open",
+          "instructions": "A promise does not establish completion.",
+          "sufficient_history": "Current completion status contains all history required by these rules."
+        },
+        "initial_state": "open"
+      }
+    },
+    "returns": "Conditional transition tables, composed summaries and possible states. Unknown transitions propagate sets.",
+    "when_to_use": "Process transitions when the caller can describe sufficient state."
+  },
+  {
+    "operator": "JEV.MATCH",
+    "purpose": "Find bounded event patterns with explicit bindings.",
+    "request": {
+      "operator": "JEV.MATCH",
+      "arguments": {
+        "records": [
+          {
+            "id": "a",
+            "item": "task-1",
+            "step": 1,
+            "text": "Work started."
+          },
+          {
+            "id": "b",
+            "item": "task-1",
+            "step": 2,
+            "text": "The requested work was completed yesterday."
+          }
+        ],
+        "typed_pattern": {
+          "nodes": [
+            {
+              "id": "start",
+              "instructions": "Reports work starting."
+            },
+            {
+              "id": "finish",
+              "instructions": "Reports work finishing."
+            }
+          ],
+          "edges": [
+            {
+              "left": "start",
+              "right": "finish",
+              "same": [
+                "item"
+              ],
+              "before": "step"
+            }
+          ]
+        },
+        "max_matches": 10
+      }
+    },
+    "returns": "Verified node-to-record bindings, candidate counts and truncation state.",
+    "when_to_use": "Find bounded multi-record patterns with verified relationships."
+  },
+  {
+    "operator": "JEV.EVIDENCE_JOIN",
+    "purpose": "Evaluate isolated evidence bundles for claims.",
+    "request": {
+      "operator": "JEV.EVIDENCE_JOIN",
+      "arguments": {
+        "claims": [
+          "The work is complete and verified."
+        ],
+        "candidate_sources": [
+          "The work is complete.",
+          "Verification passed."
+        ],
+        "max_bundle_size": 2
+      }
+    },
+    "returns": "Support/opposition stances per singleton or pair bundle; at most eight candidate sources.",
+    "when_to_use": "Combine evidence from several sources when no single source is sufficient."
+  },
+  {
+    "operator": "JEV.EVALUATE",
+    "purpose": "Submit explicit typed work items to the shared runtime.",
+    "request": {
+      "operator": "JEV.EVALUATE",
+      "arguments": {
+        "work_items": [
+          {
+            "id": "completion",
+            "subject_id": "note-1",
+            "state": "The requested work was completed yesterday.",
+            "source_revisions": [
+              "note-1-v1"
+            ],
+            "question": {
+              "type": "noul",
+              "instructions": "The source reports completed work, rather than a promise or request."
+            }
+          }
+        ]
+      }
+    },
+    "returns": "Decisions keyed by work ID, with cache and budget accounting. Set budgets in the outer limits field.",
+    "when_to_use": "Submit an explicit set of typed questions with common execution controls."
+  },
+  {
+    "operator": "JEV.ENSURE_SEMANTICS",
+    "purpose": "Fill or reuse semantic observations for subject and concept revisions.",
+    "request": {
+      "operator": "JEV.ENSURE_SEMANTICS",
+      "arguments": {
+        "subject_revs": [
+          {
+            "id": "a",
+            "text": "The requested work was completed yesterday."
+          },
+          {
+            "id": "b",
+            "text": "Please finish the work tomorrow."
+          }
+        ],
+        "concept_revs": [
+          "The source reports completed work, rather than a promise or request."
+        ]
+      }
+    },
+    "returns": "Concept decisions per subject. Optional evaluator_revs must match the configured pinned model.",
+    "when_to_use": "Reuse compatible observations and schedule only missing semantic work."
+  },
+  {
+    "operator": "JEV.MATERIALIZE",
+    "purpose": "Publish a generation for an approved concept and registered population.",
+    "request": {
+      "operator": "JEV.MATERIALIZE",
+      "arguments": {
+        "concept_rev": "<approved_revision>",
+        "target_scope": {
+          "dataset_id": "<dataset_id>"
+        },
+        "refresh_policy": {
+          "mode": "explicit"
+        }
+      }
+    },
+    "returns": "A generation, published flag and observations. on_change requires max_refreshes (1–100) and interval_seconds (at least 30).",
+    "prerequisite": "Reviewer token; use PROMOTE.value.approved_revision.id and an existing primary-key dataset ID.",
+    "when_to_use": "Publish resolved values for an approved definition and registered source."
+  },
+  {
+    "operator": "JEV.REFRESH",
+    "purpose": "Invalidate specified source dependencies and rebuild selected generations.",
+    "request": {
+      "operator": "JEV.REFRESH",
+      "arguments": {
+        "change_set": {
+          "source_revisions": [
+            "<dataset_id>"
+          ],
+          "reason": "Source records changed."
+        },
+        "policies": [
+          "<generation_id>"
+        ]
+      }
+    },
+    "returns": "Invalidated observation IDs and replacement generations, using the outer execution budget.",
+    "prerequisite": "Reviewer token; use MATERIALIZE.value.generation.id. Dataset invalidation affects that whole dataset; use row revision hashes for narrower invalidation.",
+    "when_to_use": "Rebuild a materialized generation after its source dependencies change."
+  },
+  {
+    "operator": "JEV.REVIEW",
+    "purpose": "Save a human assertion without overwriting the model evidence.",
+    "request": {
+      "operator": "JEV.REVIEW",
+      "arguments": {
+        "observations": [
+          {
+            "observation_id": "<observation_id>",
+            "value": false,
+            "reason": "The source promises future work; it does not report completion."
+          }
+        ]
+      }
+    },
+    "returns": "Saved assertions and confirmation that raw evidence is unchanged.",
+    "prerequisite": "Reviewer token; take observation_id from an evaluated run’s observations.",
+    "when_to_use": "Record a human correction without replacing the original model observation."
+  },
+  {
+    "operator": "JEV.PROMOTE",
+    "purpose": "Approve a provisional concept using independently reviewed evidence.",
+    "request": {
+      "operator": "JEV.PROMOTE",
+      "arguments": {
+        "candidate_rev": "<candidate_revision>",
+        "owner": "reviewer-name",
+        "validation_report": {
+          "independent_holdout": [
+            "<reviewed_holdout_id>"
+          ],
+          "reviewed_examples": [
+            {
+              "text": "The work remains pending.",
+              "expected": false
+            }
+          ]
+        },
+        "retention_policy": "Retain this approved definition for 30 days."
+      }
+    },
+    "returns": "An approved revision ID; no backfill starts until MATERIALIZE.",
+    "prerequisite": "Reviewer token; use DISCOVER.value.candidates[0].candidate_revision and replace the sample validation report with your actual review.",
+    "when_to_use": "Approve a provisional definition after reviewing independent examples."
+  },
+  {
+    "operator": "JEV.SELECT_SCHEMA",
+    "purpose": "Select relevant authorized tables and fields.",
+    "request": {
+      "operator": "JEV.SELECT_SCHEMA",
+      "arguments": {
+        "request": "Count completed records by team.",
+        "authorized_catalog": [
+          "<dataset_id>"
+        ]
+      }
+    },
+    "returns": "Selected tables/columns, catalog alternatives and approved relationship metadata.",
+    "prerequisite": "Existing dataset ID. Omit authorized_catalog to use the visible catalog within pilot limits.",
+    "when_to_use": "Select relevant catalog elements for a natural-language objective."
+  },
+  {
+    "operator": "JEV.PLAN_SQL",
+    "purpose": "Construct a staged SQL proposal for a natural-language request.",
+    "request": {
+      "operator": "JEV.PLAN_SQL",
+      "arguments": {
+        "request": "Count records by team.",
+        "catalog_rev": [
+          "<dataset_id>"
+        ]
+      }
+    },
+    "returns": "A reviewable plan and executed=false. A held proposal remains available; this function does not execute SQL.",
+    "prerequisite": "Existing dataset ID. catalog_rev currently accepts the dataset-ID list used by the planner.",
+    "when_to_use": "Obtain a SQL proposal for inspection without executing it."
+  },
+  {
+    "operator": "JEV.EXPLAIN_PLAN",
+    "purpose": "Estimate missing semantic work before inference.",
+    "request": {
+      "operator": "JEV.EXPLAIN_PLAN",
+      "arguments": {
+        "typed_plan": {
+          "operator": "TAG",
+          "stages": 1
+        },
+        "source_stats": {
+          "subjects": 100,
+          "questions": 2,
+          "tokens_per_judgment": 300
+        },
+        "cache_stats": {
+          "compatible_judgments": 20
+        }
+      }
+    },
+    "returns": "Judgments, conservative requests/cost bounds and policy warnings; this is an estimate, not an approval or guaranteed duration.",
+    "when_to_use": "Estimate required semantic work before dispatching provider calls."
+  },
+  {
+    "operator": "JEV.CLASSIFY_HIERARCHY",
+    "purpose": "Classify along bounded parallel taxonomy frontiers.",
+    "request": {
+      "operator": "JEV.CLASSIFY_HIERARCHY",
+      "arguments": {
+        "subjects": [
+          {
+            "id": "a",
+            "text": "The requested work was completed yesterday."
+          },
+          {
+            "id": "b",
+            "text": "Please finish the work tomorrow."
+          }
+        ],
+        "taxonomy_rev": {
+          "root": "message",
+          "nodes": {
+            "message": {
+              "children": [
+                "request",
+                "update"
+              ]
+            },
+            "request": {
+              "description": "Requests future action"
+            },
+            "update": {
+              "description": "Reports a status"
+            }
+          }
+        },
+        "beam_width": 2,
+        "depth_cap": 3
+      }
+    },
+    "returns": "Candidate paths, heuristic weights, dropped branches and unfinished paths.",
+    "when_to_use": "Select a category through a supplied hierarchy when one flat choice is unsuitable."
+  },
+  {
+    "operator": "JEV.WORKFLOW",
+    "purpose": "Run independent stages together and respect typed branch conditions.",
+    "request": {
+      "operator": "JEV.WORKFLOW",
+      "arguments": {
+        "stages": [
+          {
+            "id": "gate",
+            "literal": false
+          },
+          {
+            "id": "stage2",
+            "when": {
+              "stage": "gate",
+              "equals": true
+            },
+            "state": "The requested work was completed yesterday.",
+            "question": {
+              "type": "noul",
+              "instructions": "The source reports completed work, rather than a promise or request."
+            }
+          }
+        ]
+      }
+    },
+    "returns": "Stage decisions and execution layers. In this example stage2 is NOT_EVALUATED / SKIPPED and no provider call is needed.",
+    "when_to_use": "Compose typed stages with explicit dependencies and conditional branches."
+  },
+  {
+    "operator": "JEV.EXTRACT_TABLE",
+    "purpose": "Create typed, source-backed rows using descriptions of records and columns.",
+    "request": {
+      "operator": "JEV.EXTRACT_TABLE",
+      "arguments": {
+        "text": "Supplier Northwind supplied 12 valves for $1,250.50.\nSupplier Eastbank supplied 8 valves for $840.00.",
+        "row_description": "One row for each supplier delivery.",
+        "record_mode": "line",
+        "columns": [
+          {
+            "name": "supplier",
+            "type": "text",
+            "description": "The supplier name, without the word Supplier."
+          },
+          {
+            "name": "quantity",
+            "type": "integer",
+            "description": "The number of valves delivered."
+          },
+          {
+            "name": "amount",
+            "type": "number",
+            "description": "The total amount charged for the delivery."
+          }
+        ]
+      }
+    },
+    "returns": "Rows with exact source offsets, typed values and per-cell states. Missing or uncertain values remain unresolved. Four stages run by default. See TEXT_IMPORT.md for automatic insertion.",
+    "when_to_use": "Turn a document into typed rows using descriptions of records and columns."
+  }
+]

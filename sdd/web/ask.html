@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Ask SDD</title>
+    <link rel="stylesheet" href="/ask-assets/ask.css" />
+    <script src="/ask-assets/ask.js" defer></script>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div class="brand">
+          <span class="mark">S</span><span>SDD <small>SEMANTIC DATABASE</small></span>
+        </div>
+        <a href="/docs">API reference ↗</a>
+      </header>
+      <section class="intro">
+        <span class="eyebrow">FROM QUESTION TO EVIDENCE</span>
+        <h1>Ask your database.</h1>
+        <p>
+          Find patterns in your messages. Inspect the meaning, the evidence, and what is still
+          unknown.
+        </p>
+      </section>
+      <section class="panel">
+        <div class="connection">
+          <label for="token">Local API token</label
+          ><input
+            id="token"
+            type="password"
+            placeholder="Paste the token from SDD_API_TOKENS in .env"
+            autocomplete="off"
+          /><button id="connect" class="secondary">Connect</button
+          ><span id="connection" role="status">Not connected</span>
+        </div>
+        <form id="query-form">
+          <label for="question" class="question-label">Your question</label
+          ><textarea
+            id="question"
+            rows="3"
+            maxlength="4000"
+            placeholder="How many enterprise customers might cancel because deliveries were late in August 2026?"
+            required
+          ></textarea>
+          <div class="options">
+            <label
+              >Evaluator
+              <select id="evaluator">
+                <option value="">Choose automatically</option>
+              </select></label
+            ><label
+              >Decision policy
+              <select id="policy">
+                <option value="">Choose automatically</option>
+              </select></label
+            ><label
+              >New evaluation budget
+              <input id="budget" type="number" min="0" max="10000" value="100"
+            /></label>
+          </div>
+          <div class="actions">
+            <span>Ctrl + Enter to ask · Alt + Enter to preview</span
+            ><button type="button" id="preview" class="secondary">Preview plan</button
+            ><button type="submit" id="run">Ask database <span aria-hidden="true">→</span></button>
+          </div>
+        </form>
+      </section>
+      <div class="examples">
+        <span>TRY A QUESTION</span
+        ><button>
+          How many enterprise customers might cancel because deliveries were late in August 2026?</button
+        ><button>Show 5 messages about late deliveries</button
+        ><button>Count customers without messages about cancellation intent</button
+        ><button>Top 3 products by customers where cancellation intent</button>
+      </div>
+      <section id="output" hidden aria-live="polite">
+        <div id="status" role="status"></div>
+        <div id="metrics" class="metrics"></div>
+        <p id="answer"></p>
+        <div id="table"></div>
+        <details open>
+          <summary>Interpreted question</summary>
+          <div id="interpretation"></div>
+        </details>
+        <details>
+          <summary>Query plan & evidence</summary>
+          <pre id="details"></pre>
+        </details>
+      </section>
+      <footer>
+        Complete queries retain unresolved cases. Semantic judgments describe the text; they are not
+        proof of real-world events.<br />Supported: count, list, group, rank, Boolean conditions,
+        explicit dates, and quoted new predicates. All dates use UTC.
+      </footer>
+    </main>
+  </body>
+</html>
