@@ -1,8 +1,12 @@
-# JevSDSQL
+<h1 align="center">JevSDSQL:</h1>
 
-JevSDSQL is a PostgreSQL application for querying and modifying data in natural language. It combines SQL with JEV semantic judgments, so queries can use both stored values and the meaning of text. It includes a web workspace, an HTTP API and reusable semantic operators.
+<p align="center">
+  <strong>A self-developing SQL database with JEV based semantic operators and natural language queries</strong>
+</p>
 
-JEV is a model service from TypeSafe that evaluates propositions, chooses between supplied options and scores text against a rubric. JevSDSQL uses these decisions to select data, construct or review SQL, and retain evidence for later use. PostgreSQL handles joins, arithmetic and storage.
+41 JEV based semantic operators and conditional workflows cover classification, extraction, ranking, matching and verification. Parallel evaluation and reusable evidence reduce repeated work. English and Simplified Chinese queries, optional LLM planning, and text-to-table extraction make the database accessible through a web workspace and HTTP API.
+
+The operators combine JEV's native Noul, Choice and Score primitives with database and workflow logic. JEV is provided by TypeSafe; PostgreSQL handles storage, joins and arithmetic.
 
 [Installation](docs/INSTALLATION.md) · [User guide](docs/USER_GUIDE.md) · [简体中文](docs/zh/USER_GUIDE.md) · [Operator reference](docs/JEV_FUNCTION_REFERENCE.md)
 
